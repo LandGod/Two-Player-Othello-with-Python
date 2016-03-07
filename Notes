@@ -1,0 +1,4 @@
+-In my console UI I neglected to catch IndexError's resulting from user input. I had set things up to handle
+    a ValueError exception, but I neglected to realize that I could get unusable values that would be passed in, but
+    not be valid.
+
