@@ -1,6 +1,9 @@
 # Daniel Gold (46043649)
 # ICS 32 - Project #5: Othello (Part II)
 
+# The purpose of this module is to handle the logic of tracking item positioning on a tkinter canvas.
+# It cans store item positions and convert between pixel coordinates and fractional coordinates.
+
 
 import math
 
