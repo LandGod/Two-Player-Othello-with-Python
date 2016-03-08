@@ -9,7 +9,7 @@ import point
 import tkinter
 
 
-DEFAULT_FONT = ('Helvetica', 14)
+DEFAULT_FONT = ('Helvetica', 12)
 TITLE_FONT = ('Helvetica', 18)
 SUBTITLE_FONT = ('Helvetica', 16)
 
@@ -29,11 +29,13 @@ class OthelloApplication:
 
         self._root_window = tkinter.Tk()
 
-        self._canvas = tkinter.Canvas( master=self._root_window, width=800, height=800, background='#00802b')
+        self._root_window.wm_title("[FULL] Othello")
+
+        self._canvas = tkinter.Canvas(master=self._root_window, width=800, height=800, background='#00802b')
 
         self._canvas.grid(row=0, column=0, padx=10, pady=10, sticky=tkinter.N+tkinter.S+tkinter.E+tkinter.W)
 
-        self._canvas.bind('<Configure>', self._on_canvas_resized)
+        #self._canvas.bind('<Configure>', self._on_canvas_resized)
         self._canvas.bind('<Button-1>', self._on_canvas_clicked)
         self._canvas.bind('<Button-2>', self._on_canvas_right_clicked)
 
@@ -43,11 +45,15 @@ class OthelloApplication:
         startup = StartupDialog()
         startup.show()
 
+        if not startup.validate_all:
+            raise UserQuit("User x'd out of the startup dialogue.")
+
         state = othello_logic.GameState(startup.rows(), startup.cols(), startup.first(), startup.ne_player(),
                                         startup.win())
 
     def start(self):
         self._root_window.mainloop()
+
 
     def _on_canvas_resized(self):
         pass
@@ -59,29 +65,14 @@ class OthelloApplication:
         pass
 
     def _redraw_all(self):
-        """Delete and re-draw all elements on the canvas element"""
+        """Delete and re-draw all elements on the canvas"""
 
         self._canvas.delete(tkinter.ALL)
 
         canvas_width = self._canvas.winfo_width()
         canvas_height = self._canvas.winfo_height()
 
-    def _get_startup_parameters(self):
-        """
-        Opens a dialogue box to query the user for startup parameters.
-        :return: tuple containing all startup parameters.
-        """
-        pass
-
-    def _validate_startup_parameters(self, dialog: 'StartupDialog') -> (str, list):
-        """
-        Looks at the values stored in the StartupDialog object to see if they are all valid.
-        :param dialog: StartupDialog object that has already been called and which the user is now finished with.
-        :return: Two values as a tuple. A text string specifying what was wrong with the input (which can be passed to
-        the user). Also, a list of the values which the user entered to re-populate the dialogue box with for their
-        next attempt. The there is no error, the value of the first returned value will be None.
-        """
-        pass
+        #re-draw everything
 
 
 class StartupDialog:
@@ -100,7 +91,13 @@ class StartupDialog:
         # Windows top title (not window 'bar' title)
         prompt_label = tkinter.Label(master=self._dialog_window,
                                      text='What kind of Othello game would you like to play?', font=TITLE_FONT)
-        prompt_label.grid(row=0, column=0, columnspan=4, padx=10, pady=10)
+        prompt_label.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky=tkinter.W+tkinter.E)
+
+        self._dialog_window.columnconfigure(0, weight=1)
+        self._dialog_window.columnconfigure(1, weight=1)
+        self._dialog_window.columnconfigure(2, weight=1)
+        self._dialog_window.columnconfigure(3, weight=1)
+        self._dialog_window.columnconfigure(4, weight=1)
 
         # Instructions for entering a row and column value
         row_col_label_1 = tkinter.Label(master=self._dialog_window, text='Please specify the number of rows and '
@@ -134,6 +131,39 @@ class StartupDialog:
         self._cols_entry.bind('<FocusOut>', self._field_lose_focus)
         self._cols_entry.is_valid = False
 
+        # First player label
+        self.first_label = tkinter.Label(master=self._dialog_window,
+                                         text='Who goes first?', font=DEFAULT_FONT)
+        self.first_label.grid(row=5, column=0, columnspan=4, padx=10, pady=10)
+        # First player radio buttons
+        first_player = tkinter.IntVar()  # Value should be retrieved using the get() method
+        self._first_is_black = tkinter.Radiobutton(master=self._dialog_window, text='Black', variable=first_player,
+                                                   value=1, indicatoron=0, font=SUBTITLE_FONT, width=7)
+        self._first_is_black.grid(row=6, column=0, columnspan=2, padx=5, pady=0)
+        self._first_is_white = tkinter.Radiobutton(master=self._dialog_window, text='White', variable=first_player,
+                                                   value=2, indicatoron=0, font=SUBTITLE_FONT, width=7)
+        self._first_is_white.grid(row=6, column=2, columnspan=2, padx=5, pady=0)
+
+        # NE player label
+        self.ne_label = tkinter.Label(master=self._dialog_window,
+                                      text='Choose the starting layout of the board by specifying which player\'s\n'
+                                           'piece will appear in the North-West corner of the 4 central tiles.',
+                                      font=DEFAULT_FONT)
+        self.ne_label.grid(row=8, column=0, columnspan=4, padx=10, pady=10)
+        # NE player radio buttons
+        ne_player = tkinter.IntVar()  # Value should be retrieved using the get() method
+        self._ne_is_black = tkinter.Radiobutton(master=self._dialog_window, text='Black', variable=ne_player,
+                                                value=1, indicatoron=0, font=SUBTITLE_FONT, width=7)
+        self._ne_is_black.grid(row=9, column=0, columnspan=2, padx=5, pady=0)
+        self._ne_is_white = tkinter.Radiobutton(master=self._dialog_window, text='White', variable=ne_player,
+                                                value=2, indicatoron=0, font=SUBTITLE_FONT, width=7)
+        self._ne_is_white.grid(row=9, column=2, columnspan=2, padx=5, pady=0)
+
+        # Dictionary of all widget or variables in the class which take user input
+        self._all_fields = {'rows': self._rows_entry, 'cols': self._cols_entry, 'first': first_player,
+                            'ne_player': ne_player}  # <-- INCOMPLETE!
+
+
     def rows(self):
         return self._rows
 
@@ -151,6 +181,13 @@ class StartupDialog:
 
     def was_ok_clicked(self):
         return self._ok_clicked
+
+    def validate_all(self):
+        for each in self._all_fields:
+            if not self._validate_startup_widget(each):
+                return False
+
+        return True
 
     def show(self):
         self._dialog_window.grab_set()

@@ -2,3 +2,6 @@
     a ValueError exception, but I neglected to realize that I could get unusable values that would be passed in, but
     not be valid.
 
+Known Bugs:
+-Startup setting dialogue is sent behind root window upon creation (and using the 'after' method or 'get_focus' doesn't
+    seem to do anything at all (much less help me).
