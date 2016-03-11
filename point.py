@@ -19,12 +19,12 @@ class Point:
     def frac(self):
         """ Returns the point's location as a fractional value between 0 and 1."""
 
-        return (self._frac_x, self._frac_y)
+        return self._frac_x, self._frac_y
 
     def pixel(self, width: float, height: float) -> (int, int):
         """Returns the point as a tuple with the pixel x and pixel y of the canvas"""
 
-        return (int(self._frac_x * width), int(self._frac_y * height))
+        return int(self._frac_x * width), int(self._frac_y * height)
 
     def distance(self, p: 'Point') -> float:
         """Returns the distance from this point object to the specified point object as a fraction of canvas size."""

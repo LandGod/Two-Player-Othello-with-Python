@@ -67,11 +67,13 @@ class StartupDialog:
         # First player radio buttons
         self._first_player = tkinter.IntVar()  # Value should be retrieved using the get() method
 
-        self._first_is_black = tkinter.Radiobutton(master=self._dialog_window, text='Black', variable=self._first_player,
-                                                   value=1, indicatoron=0, font=SUBTITLE_FONT, width=7)
+        self._first_is_black = tkinter.Radiobutton(master=self._dialog_window, text='Black',
+                                                   variable=self._first_player, value=1, indicatoron=0,
+                                                   font=SUBTITLE_FONT, width=7)
         self._first_is_black.grid(row=6, column=0, columnspan=2, padx=5, pady=0)
-        self._first_is_white = tkinter.Radiobutton(master=self._dialog_window, text='White', variable=self._first_player,
-                                                   value=2, indicatoron=0, font=SUBTITLE_FONT, width=7)
+        self._first_is_white = tkinter.Radiobutton(master=self._dialog_window, text='White',
+                                                   variable=self._first_player, value=2, indicatoron=0,
+                                                   font=SUBTITLE_FONT, width=7)
         self._first_is_white.grid(row=6, column=2, columnspan=2, padx=5, pady=0)
 
         # NE player label
@@ -83,11 +85,13 @@ class StartupDialog:
         # NE player radio buttons
         self._ne_player_selection = tkinter.IntVar()  # Value should be retrieved using the get() method
 
-        self._ne_is_black = tkinter.Radiobutton(master=self._dialog_window, text='Black', variable=self._ne_player_selection,
-                                                value=1, indicatoron=0, font=SUBTITLE_FONT, width=7)
+        self._ne_is_black = tkinter.Radiobutton(master=self._dialog_window, text='Black',
+                                                variable=self._ne_player_selection, value=1, indicatoron=0,
+                                                font=SUBTITLE_FONT, width=7)
         self._ne_is_black.grid(row=9, column=0, columnspan=2, padx=5, pady=0)
-        self._ne_is_white = tkinter.Radiobutton(master=self._dialog_window, text='White', variable=self._ne_player_selection,
-                                                value=2, indicatoron=0, font=SUBTITLE_FONT, width=7)
+        self._ne_is_white = tkinter.Radiobutton(master=self._dialog_window, text='White',
+                                                variable=self._ne_player_selection, value=2, indicatoron=0,
+                                                font=SUBTITLE_FONT, width=7)
         self._ne_is_white.grid(row=9, column=2, columnspan=2, padx=5, pady=0)
 
         # Win condition label
