@@ -1,3 +1,10 @@
+# Daniel Gold (46043649)
+# ICS 32 - Project #5: Othello (Part II)
+
+# This module is responsible for creating a popup which takes the initial values which the game needs to set itslef
+# up.
+
+
 import tkinter
 from othello_gui import DEFAULT_FONT
 from othello_gui import TITLE_FONT

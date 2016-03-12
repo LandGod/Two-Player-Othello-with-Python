@@ -23,6 +23,7 @@ class UserQuit(Exception):
 class OthelloApplication:
 
     def __init__(self):
+
         self._state = None
         self._debug = False
 
@@ -55,9 +56,9 @@ class OthelloApplication:
         self._state = othello_logic.GameState(startup.rows(), startup.cols(), startup.first(), startup.ne_player(),
                                               startup.win())
 
-        self._quadrant_size = (1 / self._state.board.ROWS, 1 / self._state.board.COLS)
+        self._quadrant_size = (1 / self._state.board.COLS, 1 / self._state.board.ROWS)
 
-        assert self._quadrant_size[0] == self._quadrant_size[1]
+        #assert self._quadrant_size[0] == self._quadrant_size[1]
 
         self._canvas_width = self._board_canvas.winfo_width()
         self._canvas_height = self._board_canvas.winfo_height()
@@ -79,6 +80,7 @@ class OthelloApplication:
         self._board_canvas.bind('<Button-3>', self._on_canvas_right_clicked)
 
     def start(self):
+
         self._root_window.mainloop()
 
     def _on_canvas_resized(self, event:tkinter.Event):
@@ -99,8 +101,8 @@ class OthelloApplication:
 
         click_was_in = None, None
 
-        for y in range(self._state.board.COLS):
-            for x in range(self._state.board.ROWS):
+        for y in range(self._state.board.ROWS):
+            for x in range(self._state.board.COLS):
                 if self._is_in_quadrant(self._board_point_index[y][x], click_location):
                     click_was_in = y, x
 
@@ -144,7 +146,7 @@ class OthelloApplication:
         """Draws the game board."""
 
         # Vertical lines
-        for x in range(self._state.board.ROWS - 1):
+        for x in range(self._state.board.COLS - 1):
             x += 1
             a, b = Point(self._quadrant_size[0] * x, 0).pixel(self._canvas_width, self._canvas_height)
             c, d = Point(self._quadrant_size[0] * x, 1).pixel(self._canvas_width, self._canvas_height)
@@ -152,7 +154,7 @@ class OthelloApplication:
             self._board_canvas.create_line(a, b, c, d)
 
         # Horizontal lines
-        for y in range(self._state.board.COLS - 1):
+        for y in range(self._state.board.ROWS - 1):
             y += 1
             a, b = Point(0, self._quadrant_size[1] * y).pixel(self._canvas_width, self._canvas_height)
             c, d = Point(1, self._quadrant_size[1] * y).pixel(self._canvas_width, self._canvas_height)
@@ -176,8 +178,8 @@ class OthelloApplication:
 
     def _draw_all_pieces(self):
         """Draws all pieces present in the game state"""
-        for y in range(self._state.board.COLS):
-            for x in range(self._state.board.ROWS):
+        for y in range(self._state.board.ROWS):
+            for x in range(self._state.board.COLS):
 
                 if self._state.board[y][x] == 0:
                     continue
@@ -193,12 +195,12 @@ class OthelloApplication:
 
         index = []
 
-        for y in range(self._state.board.COLS):
+        for y in range(self._state.board.ROWS):
             row_index = []
 
             y_coordinate = self._quadrant_size[1] / 2 + y * self._quadrant_size[1]
 
-            for x in range(self._state.board.ROWS):
+            for x in range(self._state.board.COLS):
                 x_coordinate = self._quadrant_size[0] / 2 + x * self._quadrant_size[0]
 
                 row_index.append(Point(x_coordinate, y_coordinate))
@@ -213,8 +215,14 @@ class OthelloApplication:
         self._canvas_height = self._board_canvas.winfo_height()
 
     def _is_in_quadrant(self, quadrant: Point, click: Point):
-        return (self._quadrant_size[0] / 2) >= \
-               (math.hypot(quadrant.frac()[0] - click.frac()[0], quadrant.frac()[1] - click.frac()[1]))
+        quadrant_upper_x = quadrant.frac()[0] + self._quadrant_size[0] / 2
+        quadrant_lower_x = quadrant.frac()[0] - self._quadrant_size[0] / 2
+        quadrant_upper_y = quadrant.frac()[1] + self._quadrant_size[1] / 2
+        quadrant_lower_y = quadrant.frac()[1] - self._quadrant_size[1] / 2
+
+        click_x, click_y = click.frac()
+
+        return quadrant_lower_x < click_x < quadrant_upper_x and quadrant_lower_y < click_y < quadrant_upper_y
 
     def _update_score(self):
         """Updates the tkinter.StringVar variable with a formatted text string containing the current score."""""
@@ -226,8 +234,8 @@ class OthelloApplication:
 
         click_was_in = None, None
 
-        for y in range(self._state.board.COLS):
-            for x in range(self._state.board.ROWS):
+        for y in range(self._state.board.ROWS):
+            for x in range(self._state.board.COLS):
                 if self._is_in_quadrant(self._board_point_index[y][x], click_location):
                     click_was_in = y, x
 
@@ -280,17 +288,17 @@ class GameOverPopup:
                                             font=TITLE_FONT)
         else:
             self._win_label = tkinter.Label(master=self._pop_up, text='TIE!', font=TITLE_FONT)
-        self._win_label.grid(row=0, column=0, padx=10, pady=10, sticky=tkinter.S + tkinter.E + tkinter. W)
+        self._win_label.grid(row=0, column=0, padx=10, pady=10, sticky=tkinter.N + tkinter.S + tkinter.E + tkinter. W)
 
         quit_button = tkinter.Button(master=self._pop_up, text='Quit', font=SUBTITLE_FONT,
                                      command=self._on_quit_click)
 
-        quit_button.grid(row=1, column=0, padx=10, pady=10, sticky=tkinter.S + tkinter.E + tkinter. W)
+        quit_button.grid(row=1, column=0, padx=10, pady=10, sticky=tkinter.N + tkinter.S + tkinter.E + tkinter. W)
 
-        self._pop_up.bind('<Configure>', self._resize_window)
+        self._pop_up.rowconfigure(0, weight=1)
+        self._pop_up.columnconfigure(0, weight=1)
 
-    def _resize_window(self, event: tkinter.Event):
-        self._pop_up.geometry("240x110")
+        self._pop_up.bind('<Configure>', lambda event: None)
 
     def _on_quit_click(self):
         self._pop_up.destroy()
