@@ -130,7 +130,11 @@ class OthelloApplication:
                 try:
                     self._state.change_to_next_turn()
                 except othello_logic.GameOver:
-                    game_over = GameOverPopup(self._decide_winner())
+                    if self._state.win == '>':
+                        win_state = 'Most'
+                    else:
+                        win_state = 'Least'
+                    game_over = GameOverPopup(self._decide_winner(), win_state)
                     game_over.show()
                     self._root_window.destroy()
                 else:
@@ -291,7 +295,7 @@ class OthelloApplication:
 
 
 class GameOverPopup:
-    def __init__(self, winner):
+    def __init__(self, winner, win_type):
         if winner == 1:
             winner = 'Black'
         elif winner == 2:
@@ -302,7 +306,7 @@ class GameOverPopup:
             raise othello_logic.InvalidPlayerError
 
         self._pop_up = tkinter.Toplevel()
-        self._pop_up.wm_title("GAME OVER")
+        self._pop_up.wm_title("{} pieces".format(win_type))
 
         self._pop_up.bind('<Configure>', self._pop_up.after(10, self._pop_up.lift))
         self._pop_up.geometry("240x110")
@@ -334,9 +338,9 @@ class GameOverPopup:
 class NoMovePopup:
     def __init__(self, player):
         if player == 1:
-            player = 'Black'
-        elif player == 2:
             player = 'White'
+        elif player == 2:
+            player = 'Black'
         else:
             raise othello_logic.InvalidPlayerError
 
