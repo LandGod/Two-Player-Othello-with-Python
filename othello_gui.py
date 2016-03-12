@@ -9,7 +9,6 @@ import othello_configure
 import point
 from point import Point
 import tkinter
-import math
 
 DEFAULT_FONT = ('Helvetica', 12)
 TITLE_FONT = ('Helvetica', 18)
@@ -41,8 +40,16 @@ class OthelloApplication:
 
         self._board_canvas.grid(row=1, column=0, padx=10, pady=10, sticky=tkinter.N + tkinter.S + tkinter.E + tkinter.W)
 
+        self._turn = tkinter.StringVar()
+        self._turn.set('Turn: NONE')
+
+        self._turn_label = tkinter.Label(master=self._root_window, textvariable=self._turn,
+                                         font=TITLE_FONT)
+        self._turn_label.grid(row=2, column=0, padx=10, pady=5, sticky=tkinter.S + tkinter.E + tkinter.W)
+
         self._root_window.rowconfigure(0, weight=0)
         self._root_window.rowconfigure(1, weight=1)
+        self._root_window.rowconfigure(2, weight=0)
         self._root_window.columnconfigure(0, weight=1)
 
         self._root_window.bind('<Configure>', self._root_window.geometry("800x800"))
@@ -56,9 +63,13 @@ class OthelloApplication:
         self._state = othello_logic.GameState(startup.rows(), startup.cols(), startup.first(), startup.ne_player(),
                                               startup.win())
 
+        self._update_turn_label()
+
         self._quadrant_size = (1 / self._state.board.COLS, 1 / self._state.board.ROWS)
 
-        #assert self._quadrant_size[0] == self._quadrant_size[1]
+        geo_string = '{}x{}'.format(int(self._state.board.COLS * 100), int(self._state.board.ROWS * 100))
+
+        self._root_window.bind('<Configure>', self._root_window.geometry(geo_string))
 
         self._canvas_width = self._board_canvas.winfo_width()
         self._canvas_height = self._board_canvas.winfo_height()
@@ -98,6 +109,7 @@ class OthelloApplication:
         self._board_canvas.config(background='#00802b')
         self._update_canvas_size()
         click_location = point.from_pixel(event.x, event.y, self._canvas_width, self._canvas_height)
+        previous_turn = self._state.turn
 
         click_was_in = None, None
 
@@ -121,6 +133,11 @@ class OthelloApplication:
                     game_over = GameOverPopup(self._decide_winner())
                     game_over.show()
                     self._root_window.destroy()
+                else:
+                    self._update_turn_label()
+                    if self._state.turn == previous_turn:
+                        warning = NoMovePopup(previous_turn)
+                        warning.show()
 
     def _on_canvas_right_clicked(self, event: 'Tkinter Event'):
         pop_up = DebugPopup(self._debug)
@@ -266,6 +283,12 @@ class OthelloApplication:
             else:
                 return 1
 
+    def _update_turn_label(self):
+        if self._state.turn == 1:
+            self._turn.set('Turn: Black')
+        elif self._state.turn == 2:
+            self._turn.set('Turn: White')
+
 
 class GameOverPopup:
     def __init__(self, winner):
@@ -301,6 +324,43 @@ class GameOverPopup:
         self._pop_up.bind('<Configure>', lambda event: None)
 
     def _on_quit_click(self):
+        self._pop_up.destroy()
+
+    def show(self):
+        self._pop_up.grab_set()
+        self._pop_up.wait_window()
+
+
+class NoMovePopup:
+    def __init__(self, player):
+        if player == 1:
+            player = 'Black'
+        elif player == 2:
+            player = 'White'
+        else:
+            raise othello_logic.InvalidPlayerError
+
+        self._pop_up = tkinter.Toplevel()
+        self._pop_up.wm_title("[FULL] Othello")
+
+        self._pop_up.bind('<Configure>', self._pop_up.after(10, self._pop_up.lift))
+        self._pop_up.geometry("300x150")
+
+        self._text = tkinter.Label(master=self._pop_up, text='{} has no valid moves.\nTheir turn will be skipped.'.
+                                   format(player), font=TITLE_FONT)
+        self._text.grid(row=0, column=0, padx=10, pady=10, sticky=tkinter.N + tkinter.S + tkinter.E + tkinter. W)
+
+        okay_button = tkinter.Button(master=self._pop_up, text='Okay', font=SUBTITLE_FONT,
+                                     command=self._on_okay_click)
+
+        okay_button.grid(row=1, column=0, padx=10, pady=10, sticky=tkinter.N + tkinter.S)
+
+        self._pop_up.rowconfigure(0, weight=1)
+        self._pop_up.columnconfigure(0, weight=1)
+
+        self._pop_up.bind('<Configure>', lambda event: None)
+
+    def _on_okay_click(self):
         self._pop_up.destroy()
 
     def show(self):
